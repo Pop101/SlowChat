@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "slowchat"
+version = "0.1.0"
+description = ""
+authors = ["Pop101"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+Flask = "^3.0.3"
+waitress = "^3.0.0"
+aiohttp = "^3.10.6"
+ortools = "^9.11.4210"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
