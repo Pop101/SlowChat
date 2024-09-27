@@ -67,4 +67,4 @@ def get_model(model_name):
 if __name__ == '__main__':
     # Use Waitress to serve the app
     from waitress import serve
-    serve(app, host='0.0.0.0', port=5000)
+    serve(app, host='0.0.0.0', port=config.PORT)
