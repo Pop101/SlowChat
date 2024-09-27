@@ -48,8 +48,29 @@ def get_used_vram() -> list[int]:
     
     return [int(re.sub(r'\D', '', x)) for x in result.stdout.strip().split('\n')]
      
-def get_model_vram(model):
-    return config.AVAILABLE_MODELS[model].get('vram', 0)
+def get_model_vram(model_name:str):
+    estimated_size = 8000 # Default estimated size
+    
+    # Make an educated guess based on the model name
+    # Note that often, size = params * 2 or params * 4
+    # We assume that the model is quantized and precision is adjusted to be 1:1
+    
+    match = re.search(r'(\d+(?:[._]\d+)?)([bkBK])', model_name)
+    if match:
+        # Get the numeric part and suffix
+        number = match.group(1).replace('_', '.')  # Remove any underscores
+        suffix = match.group(2).lower()
+
+        if suffix == 'b':
+            multiplier = 1_000_000_000
+        elif suffix == 'k':
+            multiplier = 1_000
+        else:
+            multiplier = 1
+
+        estimated_size = int(number) * multiplier
+  
+    return config.AVAILABLE_MODELS[model_name].get('vram', estimated_size)
 
 def load_model(model):
     if model in currently_loaded_models:
@@ -61,6 +82,7 @@ def load_model(model):
     
     vram_required = get_model_vram(model)
     total_vram = get_total_vram()
+    used_vram = get_used_vram()
     
     if not any(vram_required <= x for x in total_vram):
         raise Exception('Not enough VRAM available in any GPU!\nVRAM required: {} MiB\nTotal VRAM: {} MiB'.format(vram_required, total_vram))
@@ -75,6 +97,9 @@ def load_model(model):
         'gpu': gpu,
         'last_used': time.time()
     }
+    
+    # Learn VRAM usage
+    config.AVAILABLE_MODELS[model]['vram'] = int(1.05 * (get_used_vram()[gpu] - used_vram[gpu]))
     
 def unload_model(model):
     if model not in currently_loaded_models:
