@@ -1,12 +1,11 @@
-from flask import Flask, request, jsonify
-import aiohttp
-import asyncio
-import json
+from flask import Flask, request
+import logging
 import requests
 
 from modules import gpu
 from modules import config
 
+logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
 
 hostname = gpu.get_hostname()
@@ -24,13 +23,14 @@ def intercept_request():
             'message': 'Model not specified or not found'
         }, 400
     
-
+    logging.info('Request for model: {}'.format(model_name))
     gpu.load_model(model_name) # Load the model if it's not already loaded
     
     # Forward the request to the model's server
     model = config.AVAILABLE_MODELS[model_name]
     response = requests.post(model['location'] + str(request.path), json=request.json)
     
+    logging.debug('Request served! Response: {}'.format(response.text))
     return response.json()
 
     

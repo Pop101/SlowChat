@@ -2,6 +2,8 @@ import subprocess
 from modules import config
 import time
 import re
+import logging
+
 from ortools.linear_solver import pywraplp
 currently_loaded_models = dict()
 
@@ -84,6 +86,8 @@ def load_model(model):
     total_vram = get_total_vram()
     used_vram = get_used_vram()
     
+    logging.info('Loading model: {}'.format(model))
+    
     if not any(vram_required <= x for x in total_vram):
         raise Exception('Not enough VRAM available in any GPU!\nVRAM required: {} MiB\nTotal VRAM: {} MiB'.format(vram_required, total_vram))
     
@@ -98,8 +102,11 @@ def load_model(model):
         'last_used': time.time()
     }
     
-    # Learn VRAM usage
-    config.AVAILABLE_MODELS[model]['vram'] = int(1.05 * (get_used_vram()[gpu] - used_vram[gpu]))
+    # Learn VRAM usage if significant increase (300 MiB)
+    if get_used_vram()[gpu] - used_vram[gpu] > 300:
+        config.AVAILABLE_MODELS[model]['vram'] = int(1.05 * (get_used_vram()[gpu] - used_vram[gpu]))
+    
+    logging.info('Model used VRAM: {} MiB'.format(config.AVAILABLE_MODELS[model]['vram']))
     
 def unload_model(model):
     if model not in currently_loaded_models:
@@ -108,6 +115,8 @@ def unload_model(model):
     process = currently_loaded_models[model]['process']
     process.terminate()
     del currently_loaded_models[model]
+    
+    logging.info('Unloaded model: {}'.format(model))
     
 def find_models_to_unload(desired_vram: int,  loaded_models: dict) -> (int, list[str]):
     # Solve the knapsack problem to find the minimum number of models to unload
