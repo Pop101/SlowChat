@@ -71,6 +71,7 @@ def get_model_vram(model_name:str):
             multiplier = 1
 
         estimated_size = int(number) * multiplier
+        estimated_size /= 1_000_000  # Convert to MiB
   
     return config.AVAILABLE_MODELS[model_name].get('vram', estimated_size)
 
