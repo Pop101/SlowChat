@@ -127,7 +127,7 @@ def find_models_to_unload(desired_vram: int,  loaded_models: dict) -> (int, list
     GPUS = range(len(max_vram))
     
     if any(free_vram >= desired_vram for free_vram in get_free_vram()):
-        return [] # Already solved!
+        return (0, []) # Already solved!
     
     solver = pywraplp.Solver.CreateSolver('SCIP')
     
