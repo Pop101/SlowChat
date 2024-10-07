@@ -4,6 +4,7 @@ import requests
 
 from modules import gpu
 from modules import config
+from modules import req
 
 logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
@@ -27,8 +28,8 @@ def intercept_request():
     gpu.load_model(model_name) # Load the model if it's not already loaded
     
     # Forward the request to the model's server
-    model = config.AVAILABLE_MODELS[model_name]
-    response = requests.post(model['location'] + str(request.path), json=request.json, timeout=15, retries=10)
+    model    = config.AVAILABLE_MODELS[model_name]
+    response = req.post_with_retry(model['location'] + str(request.path), json=request.json, timeout=15, retries=10)
     
     logging.debug('Request served! Response: {}'.format(response.text))
     return response.json()
