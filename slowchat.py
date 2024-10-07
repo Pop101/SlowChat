@@ -29,7 +29,7 @@ def intercept_request():
     
     # Forward the request to the model's server
     model    = config.AVAILABLE_MODELS[model_name]
-    response = req.post_with_retry(model['location'] + str(request.path), json=request.json, timeout=15, retries=10)
+    response = req.post_with_retry(model['location'] + str(request.path), json=request.json)
     
     logging.debug('Request served! Response: {}'.format(response.text))
     return response.json()
