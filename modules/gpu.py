@@ -107,7 +107,8 @@ def load_model(model):
     if get_used_vram()[gpu] - used_vram[gpu] > 300:
         config.AVAILABLE_MODELS[model]['vram'] = int(1.05 * (get_used_vram()[gpu] - used_vram[gpu]))
     
-    logging.info('Model used VRAM: {} MiB'.format(config.AVAILABLE_MODELS[model]['vram']))
+    if 'vram' in config.AVAILABLE_MODELS[model]:
+        logging.info('Model used VRAM: {} MiB'.format(config.AVAILABLE_MODELS[model]['vram']))
     
 def unload_model(model):
     if model not in currently_loaded_models:
