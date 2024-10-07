@@ -3,6 +3,7 @@ from modules import config
 import time
 import re
 import logging
+import time
 
 from ortools.linear_solver import pywraplp
 currently_loaded_models = dict()
@@ -102,6 +103,7 @@ def load_model(model):
         'gpu': gpu,
         'last_used': time.time()
     }
+    time.sleep(2) # Wait for the model to load
     
     # Learn VRAM usage if significant increase (300 MiB)
     if get_used_vram()[gpu] - used_vram[gpu] > 300:

@@ -28,7 +28,7 @@ def intercept_request():
     
     # Forward the request to the model's server
     model = config.AVAILABLE_MODELS[model_name]
-    response = requests.post(model['location'] + str(request.path), json=request.json)
+    response = requests.post(model['location'] + str(request.path), json=request.json, timeout=15, retries=10)
     
     logging.debug('Request served! Response: {}'.format(response.text))
     return response.json()
