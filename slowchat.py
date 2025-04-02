@@ -51,7 +51,7 @@ def intercept_request():
         response = ALL_MIDDLEWARE[arg].handle_outgoing(response)
         
     logging.debug('Request served! Response: {}'.format(response.text))
-    return response.json()
+    return response
 
     
 @app.route('/v1/models', methods=['GET'])
