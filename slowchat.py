@@ -5,6 +5,7 @@ import requests
 from modules import gpu
 from modules import config
 from modules import req
+from modules.middleware import ALL_MIDDLEWARE
 
 logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
@@ -24,13 +25,31 @@ def intercept_request():
             'message': 'Model not specified or not found'
         }, 400
     
+    key_args = data.get('api_key', '').split(' ')
+    if hasattr(config, 'API_KEY') and ('api_key' not in data or config.API_KEY not in key_args):
+        return {
+            'object': 'error',
+            'message': 'API key required or incorrect'
+        }, 401
+        
+    
     logging.info('Request for model: {}'.format(model_name))
     gpu.load_model(model_name) # Load the model if it's not already loaded
+        
+    # Incoming Middleware
+    for arg in key_args:
+        if arg not in ALL_MIDDLEWARE: continue
+        data = ALL_MIDDLEWARE[arg].handle_incoming(data)
     
     # Forward the request to the model's server
     model    = config.AVAILABLE_MODELS[model_name]
-    response = req.post_with_retry(model['location'] + str(request.path), json=request.json)
+    response = req.post_with_retry(model['location'] + str(request.path), json=data)
     
+    # Outgoing Middleware
+    for arg in key_args:
+        if arg not in ALL_MIDDLEWARE: continue
+        response = ALL_MIDDLEWARE[arg].handle_outgoing(response)
+        
     logging.debug('Request served! Response: {}'.format(response.text))
     return response.json()
 
